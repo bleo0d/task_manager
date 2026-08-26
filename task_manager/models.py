@@ -16,11 +16,21 @@ class TaskStatus(models.TextChoices):
 
 
 class Task(TimeStamp):
-    title = models.CharField(unique=True, max_length=100, verbose_name=_('Title'))
+    title = models.CharField(max_length=100, verbose_name=_('Title'))
     description = models.TextField(verbose_name=_('Description'))
     categories = models.ManyToManyField("Category", verbose_name=_('Categories'))
     status = models.CharField(choices=TaskStatus, max_length=20, verbose_name=_('Status'))
     deadline = models.DateTimeField(verbose_name=_('Deadline'))
+    class Meta:
+        db_table = 'task_manager_task'
+        verbose_name = _("Task")
+        constraints = [
+            models.UniqueConstraint(fields=['title'], name='unique_task_title'),
+        ]
+        ordering = ['-created_at']
+
+
+
 
     def __str__(self):
         return self.title
@@ -31,12 +41,20 @@ class SubTask(TimeStamp):
     task = models.ForeignKey(Task, on_delete=models.CASCADE, verbose_name=_('Task'))
     status=models.CharField(choices=TaskStatus, max_length=20, verbose_name=_('Status'))
     deadline = models.DateTimeField(verbose_name=_('Deadline'))
+    class Meta:
+        db_table = 'task_manager_subtask'
+        ordering = ['-created_at']
+        verbose_name = _("Subtask")
+        constraints = [models.UniqueConstraint(fields=['title'], name='unique_subtask_title')]
 
     def __str__(self):
         return self.title
 
 class Category(TimeStamp):
     name = models.CharField(max_length=100, verbose_name=_('Name'))
-
+    class Meta:
+        db_table = 'task_manager_category'
+        verbose_name = _("Category")
+        constraints = [models.UniqueConstraint(fields=['name'], name='unique_category_name')]
     def __str__(self):
         return self.name
